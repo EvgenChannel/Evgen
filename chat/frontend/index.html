@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Local Messenger</title>
+  <style>
+    #messages { border: 1px solid #ccc; height: 200px; overflow-y: auto; }
+    input { width: 80%; }
+    button { width: 18%; }
+  </style>
+</head>
+<body>
+  <h1>Simple Local Messenger</h1>
+  <label for="username">Username:</label>
+  <input type="text" id="username" placeholder="Enter username">
+  <br>
+  <label for="chat">Chat Name:</label>
+  <input type="text" id="chat" placeholder="Enter chat name">
+  <br>
+  <button onclick="joinChat()">Join Chat</button>
+
+  <div id="messages"></div>
+  <input type="text" id="message" placeholder="Type a message...">
+  <button onclick="sendMessage()">Send</button>
+
+  <script>
+    let ws;
+
+    function joinChat() {
+      const username = document.getElementById('username').value;
+      const chat = document.getElementById('chat').value;
+      if (username && chat) {
+        ws = new WebSocket(`ws://localhost:8000/ws/${chat}`);
+        ws.onopen = function() {
+          ws.send(username); // Отправляем имя пользователя на сервер
+        };
+
+        ws.onmessage = function(event) {
+          const messagesDiv = document.getElementById('messages');
+          const newMessage = document.createElement('p');
+          newMessage.textContent = event.data;
+          messagesDiv.appendChild(newMessage);
+        };
+      } else {
+        alert("Please enter both username and chat name.");
+      }
+    }
+
+    function sendMessage() {
+      const messageInput = document.getElementById('message');
+      if (ws && messageInput.value) {
+        ws.send(messageInput.value);
+        messageInput.value = '';
+      }
+    }
+  </script>
+</body>
+</html>
